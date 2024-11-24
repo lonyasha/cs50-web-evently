@@ -1,0 +1,19 @@
+{% extends "events/layout.html" %}
+
+{% block content %}
+<h2>Login</h2>
+{% if messages %}
+    <div>
+        {% for message in messages %}
+            <span>{{ message }}</span>
+        {% endfor %}
+    </div>
+{% endif %}
+<form method="post"  action="{% url 'login' %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Login</button>
+</form>
+<a href="{% url 'password_reset' %}">Forgot password?</a>
+Don't have an account? <a href="{% url 'register' %}">Register here.</a>
+{% endblock %}

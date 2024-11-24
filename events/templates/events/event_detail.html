@@ -1,0 +1,88 @@
+{% extends "events/layout.html" %}
+{% load static %}
+
+{% block content %}
+
+<h1>{{ event.title }}</h1>
+    <p><strong>Date:</strong> {{ event.date|date:"F j, Y, g:i a" }}</p>
+    <p><strong>Location:</strong> {{ event.location }}</p>
+    <p><strong>Description:</strong> {{ event.description }}</p>
+    <p><strong>Organizer:</strong> {{ event.created_by.username }}</p>
+    <p><strong>Total Attendees:</strong> {{ attendees_count }}</p>
+    
+    {% if is_creator %}
+        <a href="{% url 'event_edit' pk=event.pk %}">
+            <button>Edit Event</button>
+        </a>
+
+        {% for rsvp in rsvps %}
+            <div class="event-card">
+                <p>{{ rsvp.user }}</p>
+                <p>{{ rsvp.status }}</p>
+            </div>
+        {% endfor %}
+
+        <h2>Invite users to RSVP</h2>
+        <form method="post" action="{% url 'event_detail' pk=event.pk %}" id="search-user-form">
+            {% csrf_token %}
+            
+            <label for="usernames">Search Users:</label>
+            <input type="text" id="usernames" name="usernames" placeholder="Search by username, first or last name..." autocomplete="off">
+            
+            <ul id="search-results-list"></ul>
+            <ul id="selected-users-list"></ul>
+
+            <button type="submit" name="invite_users">Send invitations</button>
+        </form>
+
+        <h2>Tasks</h2>
+            <ul>
+                {% for task in event.task_set.all %}
+                    <li>
+                        {{ task.description }} - Assigned to: {{ task.assigned_to }}
+                        - Completed: {{ task.is_completed }}
+                        <button data-bs-toggle="modal" data-bs-target="#taskModal"
+                                data-task-id="{{ task.id }}" 
+                                data-task-url="{% url 'edit_task' task.id %}">
+                            Edit
+                        </button>
+                        <a href="{% url 'toggle_task' task.id %}">
+                            {% if task.is_completed %}Mark Incomplete{% else %}Mark Complete{% endif %}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+
+            <!-- Button to open modal for creating a task -->
+            <button data-bs-toggle="modal" data-bs-target="#taskModal"
+                    data-task-id="" 
+                    data-task-url="{% url 'create_task' event.pk %}">
+                Add Task
+            </button>
+
+            <!-- Task Modal -->
+            <div class="modal fade" id="taskModal" tabindex="-1" aria-labelledby="taskModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="taskModalLabel">Task</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <!-- Task form will be dynamically loaded here -->
+                            <form id="taskForm" method="post">
+                                {% csrf_token %}
+                                <div id="modalFormContent">
+                                    <!-- Form content will be injected via JavaScript -->
+                                </div>
+                                <button type="submit" class="btn btn-primary">Save</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        
+    {% endif %}
+    <a href="{% url 'event_list' %}">Back to Events List</a>
+    <script src="{% static 'events/js/event.js' %}"></script>
+{% endblock %}
