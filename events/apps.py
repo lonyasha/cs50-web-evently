@@ -17,7 +17,13 @@ class EventsConfig(AppConfig):
             if not Schedule.objects.filter(func='events.tasks.delete_old_events').exists():
                 schedule(
             'events.tasks.delete_old_events',
-            schedule_type='D',
+            schedule_type=Schedule.DAILY,  # Run daily
+                )
+
+            if not Schedule.objects.filter(func='events.tasks.update_event_status').exists():
+                schedule(
+                    'events.tasks.update_event_status',
+                    schedule_type=Schedule.HOURLY,  # Run hourly
                 )
         except (OperationalError, ProgrammingError, ImproperlyConfigured):
             # Skip if the database is not ready (e.g., during migrations)

@@ -16,8 +16,8 @@ urlpatterns = [
     path('events/<int:pk>/tasks/create/', views.create_task, name='create_task'),
     path('tasks/<int:task_id>/edit/', views.edit_task, name='edit_task'),
     path('tasks/<int:task_id>/toggle/', views.toggle_task_completion, name='toggle_task'),
-     path('chats/', views.chat_list, name='chat_list'),
-    path('api/events/<int:pk>/chats/', views.get_chat, name='get_chat'),
+    path('chats/', views.chat_tabs, name='chat_tabs'),
+    path('api/chats/', views.get_chats, name='get_chats'),
     path('api/chats/<int:chat_id>/messages/add/', views.add_message, name="add_message"),
     path('api/chats/<int:chat_id>/messages/', views.fetch_latest_messages, name="fetch_latest_messages"),
 ]

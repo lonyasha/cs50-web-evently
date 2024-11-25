@@ -73,6 +73,8 @@ def search_users(request):
 def event_detail(request, pk):
     event = get_object_or_404(Event, pk=pk)
     is_creator = event.created_by == request.user
+    is_active = event.status == 'ACTIVE'
+    is_attendee = RSVP.objects.filter(event=event, user=request.user, status='YES').exists()
 
     # if request.method == "POST" and request.headers.get("X-Requested-With") == "XMLHttpRequest":
     #     try:
@@ -107,6 +109,8 @@ def event_detail(request, pk):
     return render(request, 'events/event_detail.html', {
         'event': event,
         'is_creator': is_creator,
+        'is_active': is_active,
+        'is_attendee': is_attendee,
         'rsvps': rsvps,
         'attendees_count': event.attendees_count(),
         })
@@ -225,51 +229,39 @@ def toggle_task_completion(request, task_id):
     task.save()
     return redirect('event_detail', pk=task.event.pk)
 
-@login_required
-def chat_list(request):
-    user = request.user
+def fetch_chat_data(user):
+    """Fetch and prepare chat data for a given user."""
     chats = ChatParticipant.objects.filter(user=user).select_related('chat', 'chat__event')
-
-    # Fetch chat data for rendering
     chat_data = []
+
     for participant in chats:
         chat = participant.chat
         warning = None
-        if chat.event.due_date < now():
+        if chat.event.date < now():  
             warning = "This chat will be deleted in 2 days."
         chat_data.append({
             'id': chat.id,
-            'name': chat.event.name,
-            "warning": warning,
+            'name': chat.event.title,
+            'event_pk': chat.event.pk,
+            'warning': warning,
             'messages': [
                 {'user': msg.user.username, 'message': msg.message, 'created_at': msg.created_at}
                 for msg in chat.messages.order_by('created_at')
             ],
         })
+    return chat_data
 
+@login_required
+def chat_tabs(request):
+    user = request.user
+    chat_data = fetch_chat_data(user)
     # Render the template
-    return render(request, "events/chat_list.html", {"chats": chat_data})
+    return render(request, "events/chat_tabs.html", {"chats": chat_data})
 
 @login_required
-def get_chat(request, pk):
+def get_chats(request):
     user = request.user
-    chats = ChatParticipant.objects.filter(user=user).select_related('chat', 'chat__event')
-    chat_data = []
-
-    for participant in chats:
-        chat = participant.chat
-        warning = None
-        if chat.event.date < now():
-            warning = "This chat will be deleted in 2 days."
-        chat_data.append({
-            'id': chat.id,
-            'name': chat.event.name,
-            "warning": warning,
-            'messages': [
-                {'user': msg.user.username, 'message': msg.message, 'created_at': msg.created_at}
-                for msg in chat.messages.order_by('created_at')
-            ],
-        })
+    chat_data = fetch_chat_data(user)
     return JsonResponse(chat_data, safe=False)
 
 @login_required
@@ -277,10 +269,6 @@ def add_message(request, chat_id):
     if request.method == "POST":
         user = request.user
         chat = get_object_or_404(Chat, id=chat_id)
-
-        # Ensure the user is a participant
-        if not ChatParticipant.objects.filter(chat=chat, user=user).exists():
-            return JsonResponse({"status": "error", "message": "You are not a participant in this chat."}, status=403)
 
         # Add the message
         data = json.loads(request.body)
@@ -294,7 +282,7 @@ def fetch_latest_messages(request, chat_id):
     chat = get_object_or_404(Chat, id=chat_id)
     messages = Message.objects.filter(chat=chat).order_by('created_at')
     warning = None
-    if chat.event.due_date < now():
+    if chat.event.date < now():
         warning = "This chat will be deleted in 2 days."
 
     return JsonResponse({

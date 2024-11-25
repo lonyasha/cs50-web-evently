@@ -54,68 +54,55 @@ body {
   background-color: #0056b3;
 }
 
-.tabs-container {
-  display: flex;
-  border-bottom: 2px solid #ccc;
-  overflow-x: auto;
-}
-.tab {
-  padding: 10px 20px;
-  cursor: pointer;
-  border: none;
-  background: #f4f4f4;
-  border-right: 1px solid #ccc;
-  outline: none;
-  white-space: nowrap;
-}
-.tab.active {
-  background: #fff;
-  font-weight: bold;
-  border-bottom: 2px solid #007bff;
+.chat-warning {
+  background-color: #ffe6e6;
+  color: #d9534f;
+  padding: 10px;
+  border: 1px solid #d9534f;
+  border-radius: 5px;
+  margin-bottom: 10px;
 }
 .chat-container {
   display: none;
-  padding: 20px;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f8f9fa;
 }
 .chat-container.active {
   display: block;
 }
 .messages {
-  height: 300px;
+  max-height: 400px;
   overflow-y: auto;
-  border: 1px solid #ccc;
   margin-bottom: 20px;
   padding: 10px;
-  background: #fafafa;
+  background: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  max-height: 400px;
+  overflow-y: auto;
 }
-.message-input {
-  display: flex;
+.messages p {
+  margin: 0;
 }
 .message-input textarea {
-  flex: 1;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
   resize: none;
 }
-.message-input button {
-  padding: 10px 20px;
-  border: none;
-  background: #007bff;
-  color: #fff;
-  cursor: pointer;
-  border-radius: 5px;
-  margin-left: 10px;
-}
-.message-input button:hover {
-  background: #0056b3;
-}
 
-.chat-warning {
-  background-color: #ffdddd;
-  color: #d8000c;
+.message-bubble {
+  min-width: 50px;
+  max-width: 70%; /* Optional: Limit the width for longer messages */
+  word-wrap: break-word; /* Ensures text wraps within the bubble */
   padding: 10px;
-  border: 1px solid #d8000c;
-  border-radius: 5px;
-  margin-bottom: 10px;
+  border-radius: 20px;
+}
+.message-sender {
+  background-color: #007bff; /* Bootstrap primary color */
+  color: white;
+  text-align: right;
+}
+.message-receiver {
+  background-color: #6c757d; /* Bootstrap secondary color */
+  color: white;
 }

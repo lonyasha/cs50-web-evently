@@ -176,12 +176,11 @@ LOGGING = {
 
 Q_CLUSTER = {
     'name': 'DjangoQ',
-    'workers': 4,
-    'recycle': 500,
-    'timeout': 60,
-    'compress': True,
-    'save_limit': 250,
-    'queue_limit': 500,
-    'cpu_affinity': 1,
-    'django_redis': 'default',
+    'workers': 1,          # Number of worker threads
+    'recycle': 500,        # Optional: Recycle workers after 500 tasks
+    'timeout': 60,         # Optional: Task timeout in seconds
+    'sync': True,          # Run tasks synchronously without a broker
+    'save_limit': 250,     # Optional: Number of successful tasks to save
+    'retry': 90,           # Optional: Retry failed tasks after 90 seconds
+    'orm': 'default',      # Optional: Use the ORM broker for persistence
 }

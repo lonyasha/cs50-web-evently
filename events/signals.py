@@ -8,7 +8,7 @@ def create_chat_for_event(sender, instance, created, **kwargs):
         # Create a chat for the event
         chat = Chat.objects.create(event=instance)
         # Add the event creator as a participant
-        ChatParticipant.objects.create(chat=chat, user=instance.creator)
+        ChatParticipant.objects.create(chat=chat, user=instance.created_by)
 
 @receiver(post_save, sender=RSVP)
 def update_chat_participants(sender, instance, created, **kwargs):

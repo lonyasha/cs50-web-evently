@@ -21,7 +21,7 @@
                         <a class="nav-link" href="{% url 'event_list' %}">Events</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'chat_list' %}">Chats</a>
+                        <a class="nav-link" href="{% url 'chat_tabs' %}">Chats</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'rsvp_list' %}">Invites</a>
@@ -44,8 +44,10 @@
         </nav>
     </header>
     <main>
-        {% block content %}
-        {% endblock %}
+        <div class="container mt-4">
+            {% block content %}
+            {% endblock %}
+        </div>
     </main>
     <footer>
         <p>&copy; 2024 Evently. All rights reserved.</p>

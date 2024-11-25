@@ -1,0 +1,26 @@
+{% extends 'events/layout.html' %}
+{% load static %}
+{% block content %}
+
+<h1 class="mb-4">Your Events Chats</h1>
+<div class="row">
+    <!-- Tabs for chats -->
+    <div class="col-md-3">
+        <div class="list-group" id="tabs">
+            <!-- Dynamic tabs will be injected here -->
+        </div>
+    </div>
+    <!-- Chat content -->
+    <div class="col-md-9">
+        <div id="chat-contents">
+            <!-- Dynamic chat containers will be injected here -->
+        </div>
+    </div>
+</div>
+<script>
+    const activeEventPk = new URLSearchParams(window.location.search).get('event_pk'); // Extract event_pk from the URL
+    const currentUser = '{{ user.username }}'; // Extract the current user's username
+</script>
+<script src="{% static 'events/js/chat.js' %}"></script>
+
+{% endblock %}
