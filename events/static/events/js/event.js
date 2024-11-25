@@ -1,105 +1,135 @@
 document.addEventListener("DOMContentLoaded", function () {
-  document.getElementById("usernames").addEventListener(
-    "input",
-    debounce(function () {
-      const query = this.value;
+  const searchInput = document.getElementById("usernames");
+  const searchResultsList = document.getElementById("search-results-list");
+  const selectedUsersList = document.getElementById("selected-users-list");
+  const rsvpList = document.querySelector(".rsvp-list");
 
-      // Trigger search only if the query length is more than 1 character
-      if (query.length < 2) {
-        return; // Do nothing if the query is less than 2 characters
-      }
+  let selectedUsers = {};
 
-      fetch(`/search-users/?q=${query}`)
+  // Fetch search results
+  searchInput.addEventListener("input", function () {
+    const query = this.value.trim();
+    if (query.length > 2) {
+      fetch(`/search-users?q=${query}`)
         .then((response) => response.json())
         .then((data) => {
-          const list = document.getElementById("search-results-list");
-          list.innerHTML = ""; // Clear previous results
-
-          // Check if there are results
-          if (data.length > 0) {
-            data.forEach((user) => {
-              const userItem = document.createElement("li");
-              userItem.textContent = `${user.username} - ${user.first_name} ${user.last_name}`;
-
-              // Add a button to select the user
-              const selectButton = document.createElement("button");
-              selectButton.textContent = "Add";
-              selectButton.type = "button";
-              selectButton.addEventListener("click", function () {
-                console.log("Button Add is clicked");
-                if (!isUserSelected(user.id)) {
-                  addUserToSelectedList(
-                    user.id,
-                    user.username,
-                    user.first_name,
-                    user.last_name
-                  );
-                  list.innerHTML = "";
-                } else {
-                  alert("This user is already added.");
-                }
-              });
-              userItem.appendChild(selectButton);
-              list.appendChild(userItem);
-            });
-          } else {
-            const noResultsItem = document.createElement("li");
-            noResultsItem.textContent = "No users found.";
-            list.appendChild(noResultsItem);
-          }
+          searchResultsList.innerHTML = "";
+          data.forEach((user) => {
+            const li = document.createElement("li");
+            li.className =
+              "list-group-item d-flex justify-content-between align-items-center";
+            li.textContent = `${user.username} (${user.first_name} ${user.last_name})`;
+            const addButton = document.createElement("button");
+            addButton.className = "btn btn-primary btn-sm";
+            addButton.textContent = "Add";
+            addButton.onclick = function (e) {
+              e.preventDefault();
+              addSelectedUser(user);
+              // Clear search input and search results
+              searchInput.value = "";
+              searchResultsList.innerHTML = "";
+            };
+            li.appendChild(addButton);
+            searchResultsList.appendChild(li);
+          });
         });
-    }, 300)
-  );
+    } else {
+      searchResultsList.innerHTML = "";
+    }
+  });
 
+  // Add user to selected list
+  function addSelectedUser(user) {
+    if (selectedUsers[user.id]) return; // Prevent duplicates
+
+    selectedUsers[user.id] = user;
+    const li = document.createElement("li");
+    li.className =
+      "list-group-item d-flex justify-content-between align-items-center";
+    li.textContent = `${user.username} (${user.first_name} ${user.last_name})`;
+    li.setAttribute("data-user-id", user.id);
+
+    const removeButton = document.createElement("button");
+    removeButton.className = "btn btn-danger btn-sm";
+    removeButton.textContent = "Remove";
+    removeButton.onclick = function (e) {
+      e.preventDefault(); // Prevent any unintended form submission
+      removeSelectedUser(user.id);
+    };
+    li.appendChild(removeButton);
+    selectedUsersList.appendChild(li);
+  }
+
+  // Remove user from selected list
+  function removeSelectedUser(userId) {
+    delete selectedUsers[userId];
+    const userLi = selectedUsersList.querySelector(
+      `[data-user-id="${userId}"]`
+    );
+    if (userLi) userLi.remove();
+  }
+
+  // Form submission
   document
-    .getElementById("search-user-form")
-    .addEventListener("submit", function (event) {
-      event.preventDefault(); // Prevent the default form submission behavior
+    .getElementById("invite-users-form")
+    .addEventListener("submit", function (e) {
+      e.preventDefault();
 
-      const usernamesField = document.getElementById("usernames");
-      const selectedUsersList = document.getElementById("selected-users-list");
+      const selectedUserIds = Object.keys(selectedUsers);
 
-      // Gather the selected usernames
-      const selectedUsernames = selectedUsers.map((user) => user.username);
+      const submitButton = document.querySelector(
+        "#invite-users-form button[type='submit']"
+      );
+      submitButton.disabled = true;
+      submitButton.textContent = "Sending...";
 
-      if (selectedUsernames.length === 0) {
-        alert("No users selected!");
-        return; // Don't proceed if no users are selected
+      if (selectedUserIds.length > 0) {
+        fetch(this.action, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": this.querySelector('[name="csrfmiddlewaretoken"]')
+              .value,
+            "X-Requested-With": "XMLHttpRequest",
+          },
+          body: JSON.stringify({ user_ids: selectedUserIds }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.message.includes("successfully")) {
+              selectedUsersList.innerHTML = "";
+              selectedUsers = {};
+              // Fetch updated RSVP list
+              updateRsvpList();
+            } else {
+              alert("Error sending invitations.");
+            }
+          })
+          .catch(() => {
+            alert("Error sending invitations.");
+          })
+          .finally(() => {
+            submitButton.disabled = false;
+            submitButton.textContent = "Send invitations";
+          });
+      } else {
+        alert("No users selected.");
       }
-
-      console.log("Sending data to:", this.action);
-      console.log("Usernames:", selectedUsernames);
-
-      // Send the data via fetch
-      fetch(this.action, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCSRFToken(),
-        },
-        body: JSON.stringify({ usernames: selectedUsernames }),
-      })
-        .then((response) => {
-          if (response.ok) {
-            console.log("Response status:", response.status);
-            return response.json();
-          }
-          throw new Error("Failed to send invitations.");
-        })
-        .then((data) => {
-          console.log("Response data:", data);
-          alert(data.message || "Invitations sent successfully!");
-
-          // Clear the selected users list
-          selectedUsers = [];
-          selectedUsersList.innerHTML = "";
-          usernamesField.value = "";
-        })
-        .catch((error) => {
-          console.error("Fetch error:", error);
-          alert("Error sending invitations. Please try again.");
-        });
     });
+
+  function updateRsvpList() {
+    fetch(window.location.href)
+      .then((response) => response.text())
+      .then((html) => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
+        const updatedRsvpList = doc.querySelector(".rsvp-list").innerHTML;
+        rsvpList.innerHTML = updatedRsvpList;
+      })
+      .catch((error) => {
+        console.error("Error updating RSVP list:", error);
+      });
+  }
 
   const taskModal = document.getElementById("taskModal");
   const modalTitle = document.getElementById("taskModalLabel");
@@ -158,53 +188,3 @@ document.addEventListener("DOMContentLoaded", function () {
       });
   });
 });
-
-let selectedUsers = [];
-
-function isUserSelected(userId) {
-  return selectedUsers.some((user) => user.id === userId);
-}
-
-function addUserToSelectedList(userId, username, firstName, lastName) {
-  const selectedUsersList = document.getElementById("selected-users-list");
-
-  // Create the selected user item
-  const selectedUserItem = document.createElement("li");
-  selectedUserItem.textContent = `${username} - ${firstName} ${lastName}`;
-
-  // Add a remove button to each selected user
-  const removeButton = document.createElement("button");
-  removeButton.textContent = "Remove";
-  removeButton.type = "button";
-  removeButton.addEventListener("click", function () {
-    selectedUserItem.remove();
-    removeUserFromSelectedList(userId); // Remove user from the selected list
-  });
-
-  selectedUserItem.appendChild(removeButton);
-  selectedUsersList.appendChild(selectedUserItem);
-
-  // Add the user to the selectedUsers array
-  selectedUsers.push({ id: userId, username });
-
-  const searchField = document.getElementById("usernames");
-  searchField.value = "";
-  searchField.focus();
-}
-
-function removeUserFromSelectedList(userId) {
-  selectedUsers = selectedUsers.filter((user) => user.id !== userId);
-}
-
-function debounce(func, delay) {
-  let timeout;
-  return function (...args) {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func.apply(this, args), delay);
-  };
-}
-
-// Helper function to retrieve the CSRF token
-function getCSRFToken() {
-  return document.querySelector("[name=csrfmiddlewaretoken]").value;
-}

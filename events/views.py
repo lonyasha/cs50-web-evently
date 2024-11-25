@@ -76,34 +76,23 @@ def event_detail(request, pk):
     is_active = event.status == 'ACTIVE'
     is_attendee = RSVP.objects.filter(event=event, user=request.user, status='YES').exists()
 
-    # if request.method == "POST" and request.headers.get("X-Requested-With") == "XMLHttpRequest":
-    #     try:
-    #         data = json.loads(request.body)
-           
-    #         usernames = data.get('usernames', [])
-
-    #         if not usernames:
-    #                 return JsonResponse({"error": "No usernames provided."}, status=400)
-
-    #         users_to_invite = []
-
-    #         for username in usernames:
-    #             user = User.objects.filter(username=username).first()
-    #             if user:
-    #                 users_to_invite.append(user)
-
+    if request.method == "POST" and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        try:
+            data = json.loads(request.body)
+            user_ids = data.get('user_ids', [])
+            if not user_ids:
+                return JsonResponse({'message': 'No users provided'}, status=400)
             
-    #         for user in users_to_invite:
-    #             try:
-    #                 if not RSVP.objects.filter(event=event, user=user).exists():
-    #                     RSVP.objects.create(event=event, user=user, status='MAYBE')
-    #             except Exception as e:
-    #                 print(f"Error creating RSVP for {user.username}: {e}")
-
-    #         response = {"message": f"Invitations sent to {', '.join(usernames)}"}
-    #         return JsonResponse(response)
-    #     except Exception as e:
-    #         return JsonResponse({"error": str(e)}, status=500)
+            for user_id in user_ids:
+                user = User.objects.get(id=user_id)
+                RSVP.objects.get_or_create(
+                    user=user,
+                    event=event,
+                    defaults={'status': 'MAYBE'}
+                )
+            return JsonResponse({'message': 'Invitations sent successfully', 'processed_users': user_ids}, status=200)
+        except Exception as e:
+            return JsonResponse({'message': f'Error: {str(e)}'}, status=400)
 
     rsvps = event.rsvps.all() 
     return render(request, 'events/event_detail.html', {
@@ -238,7 +227,7 @@ def fetch_chat_data(user):
         chat = participant.chat
         warning = None
         if chat.event.date < now():  
-            warning = "This chat will be deleted in 2 days."
+            warning = "This chat will be deleted soon."
         chat_data.append({
             'id': chat.id,
             'name': chat.event.title,

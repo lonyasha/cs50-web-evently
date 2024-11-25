@@ -1,7 +1,28 @@
 body {
-  font-family: Arial, sans-serif;
+  font-family: "Inter", sans-serif;
+  font-size: 16px;
   margin: 0;
   padding: 0;
+  background-color: #212529;
+  color: #dee2e6;
+  min-height: 100vh;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: #dee2e6;
+}
+.nav-link:hover {
+  color: #979ea5;
+}
+
+.footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  text-align: center;
+  padding: 1rem 0;
+  background-color: #161616;
 }
 
 .is-invalid {
@@ -52,6 +73,39 @@ body {
 
 .event-card button:hover {
   background-color: #0056b3;
+}
+
+.alert {
+  width: fit-content;
+}
+
+.event-info {
+  margin: 15px 0;
+}
+
+.event-info.inactive {
+  color: #6c757d;
+}
+
+.task {
+  margin-top: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background-color: #33363a;
+}
+
+.btn-no-bg {
+  background: none;
+  margin: 0;
+  cursor: pointer;
+}
+
+.rsvp-list-item {
+  background-color: #33363a;
+  border: 1px solid #ddd;
+  color: #dee2e6;
 }
 
 .chat-warning {
