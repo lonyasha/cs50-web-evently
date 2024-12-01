@@ -3,7 +3,7 @@ __pycache__/
 *.pyc
 
 # Django
-/migrations/
+*/migrations/
 evently-env/
 /staticfiles/
 .env
