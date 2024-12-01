@@ -1,27 +1,41 @@
 {% extends 'events/layout.html' %}
 {% block content %}
 
-<h1>RSVP to Events</h1>
+<h1 class="mb-5">RSVP to events</h1>
 
-<div class="event-cards">
+<div class="row">
     {% for item in event_rsvp_status %}
-        <div class="event-card">
-            <h2>{{ item.event.title }}</h2>
-            <p><strong>Date:</strong> {{ item.event.date }}</p>
-            <p><strong>Location:</strong> {{ item.event.location }}</p>
-            <p><strong>Description:</strong> {{ item.event.description }}</p>
-            <p><strong>Attendees:</strong> {{ item.event.attendees_count }}</p>
-
-            <form method="post" action="{% url 'rsvp_event' item.event.pk %}">
-                {% csrf_token %}
-                <label for="status_{{ item.event.pk }}">Your RSVP:</label>
-                <select id="status_{{ item.event.pk }}" name="status" class="form-control">
-                    <option value="YES" {% if item.status == 'YES' %}selected{% endif %}>Yes</option>
-                    <option value="NO" {% if item.status == 'NO' %}selected{% endif %}>No</option>
-                    <option value="MAYBE" {% if item.status == 'MAYBE' %}selected{% endif %}>Maybe</option>
-                </select>
-                <button type="submit">Change</button>
-            </form>
+        <div class="col-12 col-md-6 col-xl-4 mb-4">
+            <div class="card event-card {% if item.status == 'MAYBE' %}status-maybe{% endif %}">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <span class="text-light mb-1" style="opacity: 0.8;">{{ item.event.date|date:"F j, Y, g:i a" }}</span>
+                        <i class="bi bi-envelope text-light"></i>
+                    </div>
+                    <h4 class="card-title text-light mb-2"><a href="{% url 'event_detail' pk=item.event.pk %}" class="text-light">{{ item.event.title }}</a></h5>
+                    <p class="card-text text-secondary mb-2">
+                        {% if item.event.location %}
+                            {{ item.event.location }}
+                        {% else %}
+                            Location not specified.
+                        {% endif %}
+                    </p>
+                    <form method="post" action="{% url 'rsvp_event' item.event.pk %}">
+                        {% csrf_token %}
+                        <label for="status_{{ item.event.pk }}" class="form-label text-light fw-bold">Your RSVP:</label>
+                        <div class="row">
+                            <div class="col-6">
+                                <select id="status_{{ item.event.pk }}" name="status" class="form-control">
+                                    <option value="YES" {% if item.status == 'YES' %}selected{% endif %}>Yes</option>
+                                    <option value="NO" {% if item.status == 'NO' %}selected{% endif %}>No</option>
+                                    <option value="MAYBE" {% if item.status == 'MAYBE' %}selected{% endif %}>Maybe</option>
+                                </select>
+                            </div>
+                            <div class="col-6"><button type="submit" class="btn btn-warning ">Change</button></div>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     {% empty %}
         <p>No invites available at the moment.</p>

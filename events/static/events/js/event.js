@@ -2,7 +2,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const searchInput = document.getElementById("usernames");
   const searchResultsList = document.getElementById("search-results-list");
   const selectedUsersList = document.getElementById("selected-users-list");
-  const rsvpList = document.querySelector(".rsvp-list");
 
   let selectedUsers = {};
 
@@ -69,21 +68,17 @@ document.addEventListener("DOMContentLoaded", function () {
     if (userLi) userLi.remove();
   }
 
+  const inviteForm = document.getElementById("invite-users-form");
   // Form submission
-  document
-    .getElementById("invite-users-form")
-    .addEventListener("submit", function (e) {
-      e.preventDefault();
-
+  if (inviteForm) {
+    inviteForm.addEventListener("submit", function (e) {
+      e.preventDefault(); // Stops the page from reloading
+      const submitButton = inviteForm.querySelector("button[type='submit']");
       const selectedUserIds = Object.keys(selectedUsers);
-
-      const submitButton = document.querySelector(
-        "#invite-users-form button[type='submit']"
-      );
-      submitButton.disabled = true;
-      submitButton.textContent = "Sending...";
-
       if (selectedUserIds.length > 0) {
+        submitButton.textContent = "Sending...";
+        submitButton.disabled = true;
+
         fetch(this.action, {
           method: "POST",
           headers: {
@@ -97,75 +92,87 @@ document.addEventListener("DOMContentLoaded", function () {
           .then((response) => response.json())
           .then((data) => {
             if (data.message.includes("successfully")) {
+              updateRsvpList(eventPk); // Update RSVP dynamically
+
               selectedUsersList.innerHTML = "";
-              selectedUsers = {};
-              // Fetch updated RSVP list
-              updateRsvpList();
             } else {
               alert("Error sending invitations.");
             }
           })
-          .catch(() => {
+          .catch((error) => {
+            console.error("Error in fetch:", error);
             alert("Error sending invitations.");
           })
           .finally(() => {
-            submitButton.disabled = false;
             submitButton.textContent = "Send invitations";
+            submitButton.disabled = false;
           });
       } else {
         alert("No users selected.");
       }
     });
+  } else {
+    console.error("Invite form not found.");
+  }
 
-  function updateRsvpList() {
-    fetch(window.location.href)
-      .then((response) => response.text())
-      .then((html) => {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, "text/html");
-        const updatedRsvpList = doc.querySelector(".rsvp-list").innerHTML;
-        rsvpList.innerHTML = updatedRsvpList;
+  function updateRsvpList(eventPk) {
+    // Show a loading spinner
+    const rsvpContainer = document.querySelector(".rsvp-list");
+    rsvpContainer.innerHTML = "<p>Loading...</p>";
+
+    fetch(`/events/${eventPk}/update-rsvp-list/`)
+      .then((response) => response.json())
+      .then((data) => {
+        // Replace RSVP list content with the updated HTML
+        rsvpContainer.innerHTML = data.html;
       })
       .catch((error) => {
         console.error("Error updating RSVP list:", error);
+        rsvpContainer.innerHTML =
+          '<p class="text-danger">Failed to load RSVPs.</p>';
       });
   }
 
-  const taskModal = document.getElementById("taskModal");
+  const taskModal = new bootstrap.Modal(document.getElementById("taskModal"));
   const modalTitle = document.getElementById("taskModalLabel");
   const modalForm = document.getElementById("taskForm");
   const modalFormContent = document.getElementById("modalFormContent");
 
-  // Event listener for showing the modal
-  taskModal.addEventListener("show.bs.modal", function (event) {
-    const button = event.relatedTarget;
-    const isEdit = button.getAttribute("data-task-id") !== null;
-    const taskUrl = button.getAttribute("data-task-url");
+  // Open the modal programmatically when a button is clicked
+  document.querySelectorAll("[data-task-url]").forEach((button) => {
+    button.addEventListener("click", function () {
+      const taskUrl = button.getAttribute("data-task-url");
+      const isEdit = button.hasAttribute("data-task-id");
 
-    // Set modal title based on whether it is creating or editing
-    modalTitle.textContent = isEdit ? "Edit Task" : "Create Task";
+      modalTitle.textContent = isEdit ? "Edit task" : "Create task";
 
-    // Fetch the form HTML and inject it into the modal
-    fetch(taskUrl)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`Error fetching the form: ${response.statusText}`);
-        }
-        return response.json(); // Expect JSON response with 'html'
-      })
-      .then((data) => {
-        modalFormContent.innerHTML = data.html; // Inject form HTML into modal
-        modalForm.action = taskUrl; // Update form action URL
-      })
-      .catch((error) => {
-        console.error("Error loading the form:", error);
-        modalFormContent.innerHTML = `<p class="text-danger">Failed to load the form. Please try again later.</p>`;
-      });
+      // Fetch the form and open the modal
+      fetch(taskUrl)
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`Error fetching the form: ${response.statusText}`);
+          }
+          return response.json();
+        })
+        .then((data) => {
+          modalFormContent.innerHTML = data.html;
+          modalForm.action = taskUrl;
+          taskModal.show();
+        })
+        .catch((error) => {
+          console.error("Error loading the form:", error);
+          modalFormContent.innerHTML = `<p class="text-danger">Failed to load the form. Please try again later.</p>`;
+        });
+    });
   });
 
+  // Handle form submission
   modalForm.addEventListener("submit", function (event) {
     event.preventDefault();
     const formData = new FormData(modalForm);
+
+    const taskModalElement = document.querySelector("#taskModal");
+    const eventPk = taskModalElement.getAttribute("data-event-pk");
 
     fetch(modalForm.action, {
       method: "POST",
@@ -174,11 +181,27 @@ document.addEventListener("DOMContentLoaded", function () {
       .then((response) => response.json())
       .then((data) => {
         if (data.success) {
-          // Close the modal and reload the page or update the task list dynamically
-          taskModal.querySelector('[data-bs-dismiss="modal"]').click();
-          window.location.reload(); // Reload the page (or implement dynamic task list update)
+          console.log("Event PK:", eventPk); // Log the event PK for debugging
+
+          if (eventPk) {
+            // Reload the task list
+            fetch(`/events/${eventPk}/tasks/reload/`)
+              .then((response) => response.json())
+              .then((reloadData) => {
+                const taskList = document.querySelector(".task-list");
+                if (taskList) {
+                  taskList.innerHTML = reloadData.html; // Replace the task list content
+                }
+                taskModal.hide();
+              })
+              .catch((error) => {
+                console.error("Error reloading task list:", error);
+              });
+          } else {
+            console.error("Event PK not found on modal.");
+          }
         } else {
-          // Render form with errors
+          // Render form with validation errors
           modalFormContent.innerHTML = data.html;
         }
       })
@@ -187,4 +210,11 @@ document.addEventListener("DOMContentLoaded", function () {
         modalFormContent.innerHTML = `<p class="text-danger">An error occurred. Please try again.</p>`;
       });
   });
+
+  // Close modal programmatically
+  document
+    .getElementById("closeModalButton")
+    .addEventListener("click", function () {
+      taskModal.hide();
+    });
 });

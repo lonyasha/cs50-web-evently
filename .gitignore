@@ -1,2 +1,13 @@
+# Python
+__pycache__/
+*.pyc
+
+# Django
 evently-env/
-staticfiles/
+/staticfiles/
+.env
+django.log
+
+# IDE
+.vscode/
+.idea/

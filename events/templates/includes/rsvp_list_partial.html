@@ -1,0 +1,8 @@
+<h2 class="mb-3">RSVPs</h2>
+<ul class="list-group">
+    {% for rsvp in rsvps %}
+        <li class="list-group-item rsvp-list-item">
+            <span><strong>{{ rsvp.user }}</strong> - {{ rsvp.status }}</span>
+        </li>
+    {% endfor %}
+</ul>

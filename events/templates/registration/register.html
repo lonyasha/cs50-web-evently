@@ -3,52 +3,82 @@
 
 {% block content %}
 
-    <h2>Register</h2>
-    
-    {% if messages %}
-        <div class="alert-container">
-        {% for message in messages %}
-            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
-            {{ message }}
+    <div class="container d-flex justify-content-center">
+        <div class="card mg-card w-card">
+            <div class="card-body">
+                <h2 class="card-title">Register</h2>
+
+                {% if messages %}
+                    <div class="alert-container mt-3">
+                        {% for message in messages %}
+                            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <form action="{% url 'register' %}" method="post" class="mt-3 px-md-5">
+                    {% csrf_token %}
+
+                    <div class="mb-3 text-start">
+                        <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name</label>
+                        {{ form.first_name|add_class:"form-control" }}
+                        {% for error in form.first_name.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3 text-start">
+                        <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name</label>
+                        {{ form.last_name|add_class:"form-control" }}
+                        {% for error in form.last_name.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3 text-start">
+                        <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
+                        {{ form.username|add_class:"form-control" }}
+                        {% for error in form.username.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3 text-start">
+                        <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
+                        {{ form.email|add_class:"form-control" }}
+                        {% for error in form.email.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3 text-start">
+                        <label for="{{ form.password1.id_for_label }}" class="form-label">Password</label>
+                        {{ form.password1|add_class:"form-control" }}
+                        {% for error in form.password1.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3 text-start">
+                        <label for="{{ form.password2.id_for_label }}" class="form-label">Confirm Password</label>
+                        {{ form.password2|add_class:"form-control" }}
+                        {% for error in form.password2.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <button class="btn btn-primary" type="submit">Register</button>
+                    
+                </form>
+                
+                <div class="mt-3">
+                    <span>Already have an account?</span> 
+                    <a href="{% url 'login' %}" class="text-light">Log in here.</a>
+                </div>
             </div>
-        {% endfor %}
         </div>
-    {% endif %}
+    </div>
 
-    <form action="{% url 'register' %}" method="post">
-        {% csrf_token %}
-
-        <div class="mb-3">
-            <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
-            {{ form.username|add_class:"form-control" }}
-            {% for error in form.username.errors %}
-                <div class="invalid-feedback">{{ error }}</div>
-            {% endfor %}
-        </div>
-
-        <div class="mb-3">
-            <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
-            {{ form.email|add_class:"form-control" }}
-            {% for error in form.email.errors %}
-                <div class="invalid-feedback">{{ error }}</div>
-            {% endfor %}
-        </div>
-
-        <div class="mb-3">
-            <label for="{{ form.password1.id_for_label }}" class="form-label">Password</label>
-            {{ form.password1|add_class:"form-control" }}
-            {% for error in form.password1.errors %}
-                <div class="invalid-feedback">{{ error }}</div>
-            {% endfor %}
-        </div>
-
-        <div class="mb-3">
-            <label for="{{ form.password2.id_for_label }}" class="form-label">Confirm Password</label>
-            {{ form.password2|add_class:"form-control"|add_class_if:"is-invalid" }}
-            {% for error in form.password2.errors %}
-                <span class="invalid-feedback">{{ error }}</span>
-            {% endfor %}
-        </div>
-        <button class="btn btn-outline-primary" type="submit">Register</button>
-    </form>
 {% endblock %}

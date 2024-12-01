@@ -3,123 +3,89 @@
 
 {% block content %}
 
-<h1>{{ event.title }}</h1>
-{% if not is_active %} 
-    <div class="alert alert-secondary">This event has already passed. This event will be deleted soon.</div>
-{% endif %}
+    <h1 class="mb-3">{{ event.title }}</h1>
+    {% if not is_active %} 
+        <div class="alert alert-secondary">This event has already passed. It will be deleted soon.</div>
+    {% endif %}
 
-<div class='d-flex justify-content-between'>
-    <div class="event-info {% if event.status == 'INACTIVE' %}inactive{% else %}active{% endif %}">
-        <p><strong>Date:</strong> {{ event.date|date:"F j, Y, g:i a" }}</p>
-        <p><strong>Location:</strong> {{ event.location }}</p>
-        <p><strong>Description:</strong> {{ event.description }}</p>
-        <p><strong>Organizer:</strong> {{ event.created_by.username }}</p>
-        <p><strong>Total Attendees:</strong> {{ attendees_count }}</p>
-    </div>
-    <div class='event-btns'>
-        {% if is_creator or is_attendee %}
-            <a href="{% url 'chat_tabs' %}?event_pk={{ event.pk }}"><button class='btn btn-outline-success'>Go to Chat</button></a>
-        {% endif %}
-        {% if is_creator and is_active %}
-            <a href="{% url 'event_edit' pk=event.pk %}">
-                <button class='btn btn-outline-light'>Edit Event</button>
-            </a>
-        {% endif %}
-    </div>
-</div> 
-
-<div class='row'>
-    
-    <div class='col'>
-        {% if is_creator or is_attendee %}
-            <div class='tasks-section'>
-                <div class="d-flex justify-content-between">
-                    <h2>Tasks</h2>
-                    {% if is_creator and is_active %}
-                        <!-- Button to open modal for creating a task -->
-                        <button class="btn btn-outline-light mt-2"
-                                data-bs-toggle="modal" data-bs-target="#taskModal"
-                                data-task-id=""
-                                data-task-url="{% url 'create_task' event.pk %}">
-                            Add Task
-                        </button>
-                    {% endif %}
-                </div>
-                <div class="task-list">
-                    {% for task in event.task_set.all %}
-                    <div class="task">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <div><strong>Assigned to:</strong> {{ task.assigned_to }}</div>
-                                <div>{{ task.description }}</div>
-                            </div>
-                            <div>
-                                {% if is_active %}
-                                    <button class="btn btn-outline-light btn-no-bg" aria-label="Edit" 
-                                            data-bs-toggle="modal" data-bs-target="#taskModal"
-                                            data-task-id="{{ task.id }}"
-                                            data-task-url="{% url 'edit_task' task.id %}">
-                                        <i class="bi bi-pencil-square"></i>
-                                    </button>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div><strong>Completed:</strong> {{ task.is_completed }}</div>
-                            {% if is_active %}
-                                <a href="{% url 'toggle_task' task.id %}">
-                                    <button class="btn btn-sm {% if task.is_completed %}btn-outline-danger{% else %}btn-outline-success{% endif %}">
-                                        {% if task.is_completed %}Mark Incomplete{% else %}Mark Complete{% endif %}
-                                    </button>
-                                </a>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endfor %}
-                    </div>
-                
-                </div>
-        {% endif %}
-    </div>
-    
-    {% if is_creator and is_active %}
-    <div class='col'>
-        <div class='event-management'>
-            <div class='rsvp-list'>
-                <h2>RSVPs</h2>
-                <ul class="list-group">
-                    {% for rsvp in rsvps %}
-                        <li class="list-group-item rsvp-list-item">
-                            <span><strong>{{ rsvp.user }}</strong> - {{ rsvp.status }}</span>
-                        </li>
-                    {% endfor %}
-                </ul>
-            </div>
-    
-            <div class='invite-section'>
-                <h3 class='mt-3'>Invite</h3>
-                <form method="post" action="{% url 'event_detail' pk=event.pk %}" id="invite-users-form">
-                    {% csrf_token %}
-                    
-                    <input type="text" class="form-control mb-3" id="usernames" name="usernames" placeholder="Search user by username, first or last name..." autocomplete="off">
-
-                    <ul id="search-results-list" class='list-group'></ul>
-                    <ul id="selected-users-list" class='list-group'></ul>
-    
-                    <button class="btn btn-outline-primary mt-3" type="submit" name="invite_users">Send invitations</button>
-                </form>
-            </div>
+    <div class='d-flex justify-content-between'>
+        <div class="event-info {% if event.status == 'INACTIVE' %}inactive{% else %}active{% endif %}">
+            <p><strong>Date:</strong> {{ event.date|date:"F j, Y, g:i a" }}</p>
+            <p><strong>Organizer:</strong> {{ event.created_by.username }}</p>
+            <p><strong>Location:</strong> {% if event.location %}{{ event.location }}{% else %}-{% endif %}</p>
+            <p><strong>Description:</strong> {% if event.description %}{{ event.description }}{% else %}-{% endif %}</p>
+            <p><strong>Total Attendees:</strong> {{ attendees_count }}</p>
         </div>
-    </div>
-</div>    
+        <div class='event-btns'>
+            {% if is_creator or is_attendee %}
+                <a href="{% url 'chat_tabs' %}?event_pk={{ event.pk }}"><button class='btn btn-outline-success'>Go to Chat</button></a>
+            {% endif %}
+            {% if is_creator and is_active %}
+                <a href="{% url 'event_edit' pk=event.pk %}">
+                    <button class='btn btn-outline-light'>Edit Event</button>
+                </a>
+            {% endif %}
+        </div>
+    </div> 
+
+    <div class='row'>
+        <div class='col-12 col-lg-6 mb-3'>
+            {% if is_active and is_creator or is_attendee %}
+                <div class='tasks-section'>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="mb-0">Tasks</h2>
+                        {% if is_creator %}
+                            <!-- Button to open modal for creating a task -->
+                            <button type="button" class="btn btn-outline-light"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#taskModal"
+                                    data-task-url="{% url 'create_task' event.pk %}">
+                                Add Task
+                            </button>
+                        {% endif %}
+                    </div>
+                    {% include "includes/task_list_partial.html" %}
+                </div>
+            {% else %}
+                <div class="d-none"></div>
+            {% endif %}
+        </div>
+        
+        {% if is_creator and is_active %}
+            <div class='col-12 col-lg-6'>
+                <div class='event-management'>
+                    <div class='rsvp-list'>
+                        {% include "includes/rsvp_list_partial.html" %}
+                    </div>
+            
+                    <div class='invite-section'>
+                        <h3 class='mt-3'>Invite</h3>
+                        <form method="post" action="{% url 'event_detail' pk=event.pk %}" id="invite-users-form">
+                            {% csrf_token %}
+                            
+                            <input type="text" class="form-control mb-3" id="usernames" name="usernames" placeholder="Search user by username, first or last name..." autocomplete="off">
+
+                            <ul id="search-results-list" class='list-group'></ul>
+                            <ul id="selected-users-list" class='list-group'></ul>
+            
+                            <button class="btn btn-primary mt-2" type="submit" name="invite_users">Send invitations</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="d-none"></div>
+        {% endif %}
+    </div>    
+
 
     <!-- Task Modal -->
-    <div class="modal fade" id="taskModal" tabindex="-1" aria-labelledby="taskModalLabel" aria-hidden="true">
+    <div class="modal fade" id="taskModal" tabindex="-1" aria-labelledby="taskModalLabel" aria-hidden="true" data-event-pk="{{ event.pk }}">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="taskModalLabel">Task</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white" aria-label="Close" data-bs-dismiss="modal" id="closeModalButton"></button>
                 </div>
                 <div class="modal-body">
                     <!-- Task form will be dynamically loaded here -->
@@ -134,7 +100,11 @@
             </div>
         </div>
     </div>        
-    {% endif %}
 
-<script src="{% static 'events/js/event.js' %}"></script>
+
+    <script>
+        const eventPk = {{ event.pk }};
+    </script>
+
+    <script src="{% static 'events/js/event.js' %}"></script>
 {% endblock %}

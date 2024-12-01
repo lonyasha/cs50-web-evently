@@ -63,8 +63,15 @@ function initializeChats(chats) {
   chats.forEach((chat, index) => {
     // Create a tab for each chat
     const tab = document.createElement("button");
-    tab.className = "list-group-item list-group-item-action";
-    tab.innerText = chat.name;
+    tab.className = "list-group-item list-group-item-action chat-tab";
+    tab.innerHTML = `
+        ${chat.name}
+        ${
+          chat.unread_count > 0
+            ? `<span class="badge bg-danger">${chat.unread_count}</span>`
+            : ""
+        }
+      `;
     tab.href = "#";
     tab.dataset.chatId = chat.id;
     if (activeChatId ? chat.id === activeChatId : index === 0) {
@@ -88,9 +95,9 @@ function initializeChats(chats) {
           <textarea id="message-input-${
             chat.id
           }" class="form-control" rows="3" placeholder="Type your message..."></textarea>
-          <button class="btn btn-primary mt-2 float-end" onclick="sendMessage(${
+          <button class="btn btn-outline-light" onclick="sendMessage(${
             chat.id
-          })">Send</button>
+          })"><i class="bi bi-send"></i></button>
       </div>
       `;
     chatContents.appendChild(chatContainer);
@@ -128,7 +135,7 @@ async function sendMessage(chatId) {
     // Optimistically update the UI with Bootstrap classes
     const tempMessage = `
       <div id="${tempId}" class="d-flex flex-column align-items-end mb-2">
-      <div class="text-muted small">${formatTimestamp(Date.now())}</div>
+      <div class="text-light small">${formatTimestamp(Date.now())}</div>
         <div class="message-bubble message-sender">
           ${messageText}
         </div>
@@ -172,7 +179,7 @@ function renderMessages(messages, currentUser) {
         // Current user's message (right-aligned, no username)
         return `
          <div class="d-flex flex-column align-items-end mb-2">
-         <div class="text-muted small">${formatTimestamp(msg.created_at)}</div>
+         <div class="text-light small">${formatTimestamp(msg.created_at)}</div>
            <div class="message-bubble message-sender">
              ${msg.message}
            </div>
@@ -181,9 +188,9 @@ function renderMessages(messages, currentUser) {
         // Other user's message (left-aligned, with username)
         return `
          <div class="d-flex flex-column align-items-start mb-2">
-            <div><strong>${
+            <div><span class="msg-user-name">${
               msg.user
-            } </strong><span class="text-muted small">${formatTimestamp(
+            }  </span><span class="text-light small">  ${formatTimestamp(
           msg.created_at
         )}</span></div>
             <div class="message-bubble message-receiver">

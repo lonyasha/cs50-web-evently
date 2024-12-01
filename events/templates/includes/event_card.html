@@ -1,0 +1,20 @@
+<div class="card event-card">
+    <div class="card-body">
+        <div class="d-flex justify-content-between">
+            <span class="text-light mb-1" style="opacity: 0.8;">{{ event.date|date:"F j, Y, g:i a" }}</span>
+            <i class="bi bi-calendar-event text-light"></i>
+        </div>
+        <h4 class="card-title text-light mb-2">{{ event.title }}</h5>
+        <p class="card-text text-secondary mb-2">
+            {% if event.location %}
+                {{ event.location }}
+            {% else %}
+                Location not specified.
+            {% endif %}
+        </p>
+        <div class="d-flex float-end gap-3">
+            <a href="{% url 'chat_tabs' %}?event_pk={{ event.pk }}" class="btn btn-outline-light">Go to Chat</a>
+            <a href="{% url 'event_detail' pk=event.pk %}" class="btn btn-light">Details</a>
+        </div>
+    </div>
+</div>

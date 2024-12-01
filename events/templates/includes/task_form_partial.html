@@ -1,0 +1,17 @@
+{% load widget_tweaks custom_widget_tweaks %}
+
+<div>
+    <div class="mb-3">
+        <label for="id_assigned_to" class="form-label">Assigned to:</label>
+        {{ form.assigned_to|add_class:"form-select" }}
+    </div>
+    <div class="mb-3">
+        <label for="id_description" class="form-label">Description:</label>
+        {{ form.description|add_class:"form-control" }}
+    </div>
+    <div class="form-check mb-3">
+        <input type="checkbox" class="form-check-input" id="id_is_completed" name="is_completed" 
+               {% if form.is_completed.value %}checked{% endif %}>
+        <label for="id_is_completed" class="form-check-label">Is Completed</label>
+    </div>
+</div>

@@ -1,4 +1,74 @@
 {% extends "events/layout.html" %} 
-{% block body %} 
-    <h1>Welcome to Evently!</h1>
+{% load static %}
+{% block content %} 
+    
+    {% if user.is_authenticated %}
+       <h1 class="mb-5">Dashboard</h1>
+        <!-- Upcoming Events Section -->
+        <div class="mb-5">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2>Upcoming Events</h2>
+                <a href="{% url 'event_list' %}" class="btn btn-outline-light float-end">Show more events</a>
+            </div>
+            <div class="row" id="event-list">
+                {% for event in upcoming_events %}
+                    <div class="col-12 col-md-6 col-xl-4 mb-4">
+                        {% include "includes/event_card.html" %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        <!-- Task List Section -->
+        <div class="mb-5">
+            <h2 class="mb-3">Tasks</h2>
+            <div class="row">
+                {% for task in tasks %}
+                <div class="col-12 col-md-6 col-xl-4 mb-4">
+                    <div class="card task">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="mb-1">
+                                    <small class="text-light">from</small>
+                                    <a href="{% url 'event_detail' pk=task.event.pk %}" class="task-event-title">{{ task.event.title }}</a>
+                                </div>
+                            
+                                    <a href="{% url 'toggle_task' task.id %}" class="btn btn-sm btn-success toggle-completion-btn" data-task-id="{{ task.id }}">
+                                        Done
+                                    </a>
+                            </div>
+                            <div class="d-flex align-items-center gap-2 mt-2">
+                                <i class="bi bi-exclamation-diamond"></i>
+                                <span class="card-text text-light mb-0">
+                                    {{ task.description }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% else %}
+        <div class="d-flex justify-content-center">
+            <div class="card mg-card w-card">
+                <div class="card-body text-center">
+                <h1 class="card-title">Welcome to Evently! 🎉</h1>
+                <p class="card-text mt-3">
+                    Evently is your go-to platform for seamless event planning, whether you're organizing a conference, workshop, party, or community gathering.
+                </p>
+                <p class="card-text">
+                    With tools for scheduling, task assignment, RSVP management, and group discussions, we make collaboration simple and enjoyable.
+                </p>
+                <hr>
+                <p class="card-text small">🔒 It looks like you're not logged in yet.</p>
+                <p>To unlock Evently's powerful features and start planning your next event, please log in or create an account.</p>
+                <a href="{% url 'login' %}" class="btn btn-outline-light mx-2">Log In</a>
+                <a href="{% url 'register' %}" class="btn btn-outline-light mx-2">Register</a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <script src="{% static 'events/js/scripts.js' %}"></script>
+    
 {% endblock %}
