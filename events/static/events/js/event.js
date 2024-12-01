@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
+  // Event RSVP form
   const searchInput = document.getElementById("usernames");
   const searchResultsList = document.getElementById("search-results-list");
   const selectedUsersList = document.getElementById("selected-users-list");
@@ -68,6 +69,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (userLi) userLi.remove();
   }
 
+  // Invite users form
   const inviteForm = document.getElementById("invite-users-form");
   // Form submission
   if (inviteForm) {
@@ -115,6 +117,7 @@ document.addEventListener("DOMContentLoaded", function () {
     console.error("Invite form not found.");
   }
 
+  // Update RSVP list dynamically
   function updateRsvpList(eventPk) {
     // Show a loading spinner
     const rsvpContainer = document.querySelector(".rsvp-list");
@@ -133,6 +136,8 @@ document.addEventListener("DOMContentLoaded", function () {
       });
   }
 
+  // Task modal
+
   const taskModal = new bootstrap.Modal(document.getElementById("taskModal"));
   const modalTitle = document.getElementById("taskModalLabel");
   const modalForm = document.getElementById("taskForm");
@@ -143,6 +148,7 @@ document.addEventListener("DOMContentLoaded", function () {
     button.addEventListener("click", function () {
       const taskUrl = button.getAttribute("data-task-url");
       const isEdit = button.hasAttribute("data-task-id");
+      const taskModalElement = document.querySelector("#taskModal");
 
       modalTitle.textContent = isEdit ? "Edit task" : "Create task";
 
@@ -157,7 +163,8 @@ document.addEventListener("DOMContentLoaded", function () {
         .then((data) => {
           modalFormContent.innerHTML = data.html;
           modalForm.action = taskUrl;
-          taskModal.show();
+          taskModalElement.style.display = "block";
+          taskModalElement.removeAttribute("aria-hidden");
         })
         .catch((error) => {
           console.error("Error loading the form:", error);
@@ -181,8 +188,6 @@ document.addEventListener("DOMContentLoaded", function () {
       .then((response) => response.json())
       .then((data) => {
         if (data.success) {
-          console.log("Event PK:", eventPk); // Log the event PK for debugging
-
           if (eventPk) {
             // Reload the task list
             fetch(`/events/${eventPk}/tasks/reload/`)
@@ -192,7 +197,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (taskList) {
                   taskList.innerHTML = reloadData.html; // Replace the task list content
                 }
-                taskModal.hide();
+                taskModalElement.style.display = "none";
+                taskModalElement.removeAttribute("aria-hidden");
+                const backdrop = document.querySelector(".modal-backdrop");
+                if (backdrop) {
+                  backdrop.style.display = "none";
+                }
               })
               .catch((error) => {
                 console.error("Error reloading task list:", error);
@@ -215,6 +225,51 @@ document.addEventListener("DOMContentLoaded", function () {
   document
     .getElementById("closeModalButton")
     .addEventListener("click", function () {
-      taskModal.hide();
+      const taskModalElement = document.querySelector("#taskModal");
+      taskModalElement.style.display = "none";
+      taskModalElement.removeAttribute("aria-hidden");
     });
+
+  // Delete event confirmation
+  document
+    .getElementById("deleteButton")
+    .addEventListener("click", function (e) {
+      if (!confirm("Are you sure you want to delete this event?")) {
+        e.preventDefault();
+      }
+    });
+
+  // Handle delete task forms
+  document.querySelectorAll(".delete-task-form").forEach((form) => {
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+
+      const url = form.action;
+      const csrfToken = form.querySelector("[name=csrfmiddlewaretoken]").value;
+      const eventPk = form.getAttribute("data-event-pk");
+
+      if (confirm("Are you sure you want to delete this task?")) {
+        fetch(url, {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": csrfToken,
+            "X-Requested-With": "XMLHttpRequest",
+          },
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              // Reload the page if the task is successfully deleted
+              location.reload();
+            } else {
+              alert("Failed to delete the task.");
+            }
+          })
+          .catch((error) => {
+            console.error("Error deleting task:", error);
+            alert("An error occurred. Please try again.");
+          });
+      }
+    });
+  });
 });

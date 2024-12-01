@@ -9,6 +9,7 @@ def update_event_status():
     events_to_update.update(status='INACTIVE')  # Bulk update the status
 
 def delete_old_events():
+    """Delete events that are older than 2 days."""
     threshold_date = now() - timedelta(days=2)
     old_events = Event.objects.filter(date__lt=threshold_date)
     old_events.delete()  # Cascade deletes RSVPs, tasks, and chats associated with the event

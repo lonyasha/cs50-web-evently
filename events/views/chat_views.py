@@ -1,5 +1,6 @@
 import json
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import get_user
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from ..models import Chat, Message, ChatParticipant
@@ -31,6 +32,7 @@ def fetch_chat_data(user):
 
 @login_required
 def chat_tabs(request):
+    """Render the chat tabs with the user’s chat data."""
     user = request.user
     chat_data = fetch_chat_data(user)
     # Render the template
@@ -38,12 +40,14 @@ def chat_tabs(request):
 
 @login_required
 def get_chats(request):
+    """Return chat data for the user as JSON."""
     user = request.user
     chat_data = fetch_chat_data(user)
     return JsonResponse(chat_data, safe=False)
 
 @login_required
 def add_message(request, chat_id):
+    """Add a message to a specific chat."""
     if request.method == "POST":
         user = request.user
         chat = get_object_or_404(Chat, id=chat_id)
@@ -56,7 +60,9 @@ def add_message(request, chat_id):
             return JsonResponse({"status": "success"})
     return JsonResponse({"status": "error"}, status=400)
 
+@login_required
 def fetch_latest_messages(request, chat_id):
+    """Fetch the latest messages for a specific chat."""
     chat = get_object_or_404(Chat, id=chat_id)
     messages = Message.objects.filter(chat=chat).order_by('created_at')
     warning = None

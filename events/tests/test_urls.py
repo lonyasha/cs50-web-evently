@@ -1,9 +1,10 @@
 from django.test import TestCase
 from django.urls import reverse, resolve
 from events.views.auth_views import login_view, logout_view, register
-from events.views.event_task_views import index, event_list, event_detail, event_form, update_rsvp_list, reload_task_list, create_task, edit_task, toggle_task_completion
-from events.views.rsvp_views import rsvp_list, rsvp_event
+from events.views.event_views import index, event_list, event_detail, event_form
+from events.views.rsvp_views import rsvp_list, rsvp_event, update_rsvp_list
 from events.views.chat_views import chat_tabs, get_chats, add_message, fetch_latest_messages
+from events.views.task_views import create_task, reload_task_list, edit_task, toggle_task_completion
 from events.views.auth_views import (
     CustomPasswordResetView,
     CustomPasswordResetDoneView,

@@ -39,7 +39,6 @@ function initializeDynamicUpdates(chats) {
 async function fetchChats() {
   const response = await fetch("/api/chats/");
   const chats = await response.json();
-  console.log(chats);
   initializeChats(chats);
   initializeDynamicUpdates(chats); // Start periodic updates for all chats
 }
