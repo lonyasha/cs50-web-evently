@@ -1,6 +1,10 @@
 # Evently
 
-Evently is a web application designed to manage events efficiently. This project is built using the Django framework and incorporates several distinctive features that make it both unique and complex.
+Evently is a web application developed as the final project for CS50’s Web Programming with Python and JavaScript course. The project is part of the capstone assignment, where students are tasked with designing and implementing a dynamic, full-stack web application. The application leverages Django for back-end development and integrates JavaScript for front-end interactivity, showcasing the knowledge and skills gained throughout the course.
+
+##Overview
+
+The capstone project allows students to build a web application of their own design, adhering to specific requirements for complexity and distinctiveness. Evently meets these requirements by providing a unique platform for event management, incorporating features that extend beyond the complexity of previous course projects.
 
 ## Distinctiveness and Complexity: Why This Project Satisfies the Requirements
 
