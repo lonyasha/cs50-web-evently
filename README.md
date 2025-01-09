@@ -304,3 +304,9 @@ pip install -r requirements.txt
 
 - Ensure that you have configured your database and other settings correctly in `settings.py`.
 - If you encounter issues, check the logs or consult the documentation for further guidance.
+
+---
+
+This project is a part of **[CS50's Web Programming with Python and JavaScript](https://cs50.harvard.edu/web/2020/)** course by Harvard University. The course provided a comprehensive introduction to web development, and this project was designed to showcase the skills learned throughout the course.
+
+Thank you for visiting! 🎉
