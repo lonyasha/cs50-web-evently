@@ -1,4 +1,4 @@
-# Evently - README
+# Evently
 
 Evently is a web application designed to manage events efficiently. This project is built using the Django framework and incorporates several distinctive features that make it both unique and complex.
 
