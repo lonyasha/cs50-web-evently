@@ -186,8 +186,8 @@ Lists all the Python dependencies required to run the project. It includes Djang
 1. **Clone the repository**:
 
    ```bash
-   git clone <repository-url>
-   cd evently
+   git clone https://github.com/lonyasha/cs50w-evently.git
+   cd cs50w-evently
    ```
 
 2. **Install Dependencies**:
